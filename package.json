@@ -2,7 +2,7 @@
   "name": "untitled",
   "version": "1.0.0",
   "description": "",
-  "main": "src/index.js",
+  "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -12,6 +12,9 @@
   "dependencies": {
     "axios": "latest",
     "cheerio": "^1.0.0-rc.3",
-    "moment": "^2.24.0"
-  }
+    "glob": "^7.1.6",
+    "moment": "^2.24.0",
+    "sift": "^11.1.1"
+  },
+  "devDependencies": {}
 }

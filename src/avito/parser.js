@@ -1,41 +1,68 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
 const stringToUnixTime = require('../utils/avitotime');
-const getList = async url => {
-    let html;
+const QueryState = {BEGIN: 'BEGIN', NEXT: 'NEXT', END: 'END'};
+const cheerioInit = async (url) => {
     try {
-        html = await axios(url);
+
+        const html = (await axios(url)).data;
+        return cheerio.load(html);
     } catch (err) {
         return err;
     }
-    const $ = cheerio.load(html.data);
-    return {pages: $('.pagination-page').toArray().length,
-    items: $('.item_table-wrapper').toArray() };
-    return {
-        next: () => nextPage < list.pages.length ?
-            {value: parser(nextPage++), done: false} :
-            {done: true}
-    }
 };
-const listParser = list => {
-
-    return () => {
-        return list.items.map((line, index) => {
-            const $ = cheerio.load(line);
-            return {
-                href: 'https://avito.ru' + $('.snippet-link').attr('href'),
-                text: $('.snippet-link').text().trim(),
-                price: {
-                    currency: $('span[itemprop=priceCurrency]').attr('content'),
-                    value: Number($('.price').text().replace(/[^\d]/g, ''))
-                },
-                address: {
-                    locality: $('meta[itemprop=addressLocality]').attr('content'),
-                    geoReference: $('.item-address-georeferences-item__content').text().trim()
-                },
-                time: stringToUnixTime($('div[data-absolute-date]').attr('data-absolute-date'))
+const itemsParser = (list, category) => {
+    return list.map((line, index) => {
+        const $ = cheerio.load(line);
+        const snippet = $('.snippet-link');
+        const result = {
+            href: 'https://avito.ru' + snippet.attr('href'),
+            text: snippet.text().trim(),
+            price: {
+                currency: $('span[itemprop=priceCurrency]').attr('content'),
+                value: Number($('.price').text().replace(/[^\d]/g, ''))
+            },
+            address: {
+                locality: $('meta[itemprop=addressLocality]').attr('content'),
+                addressString: $('.item-address__string').text().trim(),
+                geoReference: $('.item-address-georeferences-item__content').text().trim()
+            },
+            time: stringToUnixTime($('div[data-absolute-date]').attr('data-absolute-date'))
+        };
+        const customFields = category.parser(result);
+        return Object.assign(result,customFields);
+    })
+};
+module.exports = url => {
+    let pagesUrls, $, nextPage = 0;
+    const getItems = $ => $('.item[itemtype="http://schema.org/Product"]').toArray();
+    const init = async (categoryParser) => {
+        $ = await cheerioInit(url);
+        pagesUrls = $('.pagination-page').toArray().map(page => 'https://avito.ru' + page.attribs.href);
+        return {
+            next: async () => {
+                const state = !nextPage ? QueryState.BEGIN : nextPage < pagesUrls.length ? QueryState.NEXT : QueryState.END;
+                const result = {
+                    value: {
+                        items: Object.create(null),
+                        totalItems: $('span[class*=page-title-count]').text()
+                    }, done: false
+                };
+                switch (state) {
+                    case "BEGIN":
+                        result.value.items = itemsParser(getItems($), categoryParser);
+                        break;
+                    case "NEXT":
+                        result.value.items = itemsParser(getItems(await cheerioInit(pagesUrls[nextPage])),categoryParser);
+                        break;
+                    case "END":
+                        result.done = true;
+                        break;
+                }
+                nextPage += 1;
+                return result;
             }
-        })
+        }
     };
+    return {init};
 };
-module.exports = {listParser,getList};
