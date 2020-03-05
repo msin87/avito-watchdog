@@ -1,6 +1,7 @@
 const baseUrl = 'https://www.avito.ru/reutov/kvartiry/sdam?cd=1&f=550_5702-5703-5704';
 const Parser = require("./avito/parser")(baseUrl);
-const Filter = require('./avito/filter')({text:{$regex: }});
+const Locations = require('./avito/library/locations');
+// const Filter = require('./avito/filter')({text:{$regex: }});
 const Categories =  require('./avito/category');
 const start = async () => {
 
@@ -19,4 +20,4 @@ const start = async () => {
     console.log('end');
 };
 
-start();
+// start();

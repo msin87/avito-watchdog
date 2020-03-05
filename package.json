@@ -13,7 +13,9 @@
     "axios": "latest",
     "cheerio": "^1.0.0-rc.3",
     "glob": "^7.1.6",
+    "map-obj": "^4.1.0",
     "moment": "^2.24.0",
+    "nedb": "^1.8.0",
     "sift": "^11.1.1"
   },
   "devDependencies": {}
