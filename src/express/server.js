@@ -11,7 +11,7 @@ es.use(function (req, res, next) {
 });
 es.use(router);
 
-const start = port => new Promise(((resolve, reject) => {
+module.exports = port => new Promise(((resolve, reject) => {
     try {
         es.listen(3001, () => {
             resolve(`Express started at ${port}! Folder: ${__dirname}`);
@@ -21,6 +21,5 @@ const start = port => new Promise(((resolve, reject) => {
     }
 
 }));
-module.exports = start;
 
 

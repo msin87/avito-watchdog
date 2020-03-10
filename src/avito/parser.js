@@ -11,7 +11,7 @@ const cheerioInit = async (url) => {
         return err;
     }
 };
-const itemsParser = (list, category) => {
+const itemsParser = (list, categoryParser) => {
     return list.map((line, index) => {
         const $ = cheerio.load(line);
         const snippet = $('.snippet-link');
@@ -27,16 +27,16 @@ const itemsParser = (list, category) => {
                 addressString: $('.item-address__string').text().trim(),
                 geoReference: $('.item-address-georeferences-item__content').text().trim()
             },
-            time: stringToUnixTime($('div[data-absolute-date]').attr('data-absolute-date'))
+            time: stringToUnixTime($('div[data-absolute-date]').attr('data-absolute-date')||$('div[data-marker=item-date]').text().trim())
         };
-        const customFields = category.parser(result);
+        const customFields = categoryParser(result);
         return Object.assign(result,customFields);
     })
 };
-module.exports = url => {
+module.exports = () => {
     let pagesUrls, $, nextPage = 0;
     const getItems = $ => $('.item[itemtype="http://schema.org/Product"]').toArray();
-    const init = async (categoryParser) => {
+    const init = async (url,categoryParser) => {
         $ = await cheerioInit(url);
         pagesUrls = $('.pagination-page').toArray().map(page => 'https://avito.ru' + page.attribs.href);
         return {

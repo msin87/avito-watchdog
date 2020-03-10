@@ -1,7 +1,7 @@
 const axios = require('axios');
 const db = require('../../db/db')('Locations');
 const AVITO_MODULE_REGEX = /"9Gwr":function\(e,t,o\)\{"use strict";t\.a=\{.*\}\},"9R94"/gi;
-const LOCATIONS_URL = 'https://www.avito.st/mstatic/build/13.f9cf57d3aff7f.js';
+const LOCATIONS_URL = 'https://www.avito.st/mstatic/build/14.8020eedac470d.js';
 const SEARCH_LOCATION_API_URL = 'https://www.avito.ru/web/1/slocations';
 const storeLocations = async url => {
     let script;

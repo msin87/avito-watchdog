@@ -1,5 +1,22 @@
 const model = require('../models/urls');
-
+const strToBool = require('../../../utils/strtobool');
+const buildFilter = query => {
+    Object.keys(query).forEach(key => query[key] === undefined && delete query[key]);
+    return Object.keys(query).map(key => {
+        switch (key) {
+            case 'autelId':
+                return {autelId: RegExp(query[key] || '')};
+            case 'banned':
+                return {banned: strToBool(query[key])};
+            case 'demoMsu':
+                return {demoMsu: strToBool(query[key]) ? RegExp('msu') : ''};
+            default:
+                break;
+        }
+    }).reduce((acc, val) => {
+        return Object.assign(acc, val);
+    }, {});
+};
 module.exports = {
     getList: async (req, res) => {
 
