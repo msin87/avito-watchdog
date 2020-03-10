@@ -2,11 +2,9 @@ const server = require('./express/server');
 const Parser = require("./avito/parser")();
 const urlsDb = require('./express/api/models/urls');
 
-const workers = require('./avito/master');
+const workers = require('./worker/master');
 const start = async () => {
     const urls = (await urlsDb.getList({})).docs;
-    const parser = await Parser.init(urls[0]['url'], Categories['other']);
-    let result = await parser.next();
     result = await parser.next();
     result = await parser.next();
     result = await parser.next();
