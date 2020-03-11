@@ -2,6 +2,7 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 const stringToUnixTime = require('../utils/avitotime');
 const QueryState = {BEGIN: 'BEGIN', NEXT: 'NEXT', END: 'END'};
+const Categories = require('../avito/category');
 const cheerioInit = async (url) => {
     try {
 
@@ -11,7 +12,7 @@ const cheerioInit = async (url) => {
         return err;
     }
 };
-const itemsParser = (list, categoryParser) => {
+const itemsParser = (list, category) => {
     return list.map((line, index) => {
         const $ = cheerio.load(line);
         const snippet = $('.snippet-link');
@@ -29,14 +30,14 @@ const itemsParser = (list, categoryParser) => {
             },
             time: stringToUnixTime($('div[data-absolute-date]').attr('data-absolute-date')||$('div[data-marker=item-date]').text().trim())
         };
-        const customFields = categoryParser(result);
+        const customFields = Categories[category](result);
         return Object.assign(result,customFields);
     })
 };
 module.exports = () => {
     let pagesUrls, $, nextPage = 0;
     const getItems = $ => $('.item[itemtype="http://schema.org/Product"]').toArray();
-    const init = async (url,categoryParser) => {
+    const init = async (url,category) => {
         $ = await cheerioInit(url);
         pagesUrls = $('.pagination-page').toArray().map(page => 'https://avito.ru' + page.attribs.href);
         return {
@@ -50,10 +51,10 @@ module.exports = () => {
                 };
                 switch (state) {
                     case "BEGIN":
-                        result.value.items = itemsParser(getItems($), categoryParser);
+                        result.value.items = itemsParser(getItems($), category);
                         break;
                     case "NEXT":
-                        result.value.items = itemsParser(getItems(await cheerioInit(pagesUrls[nextPage])),categoryParser);
+                        result.value.items = itemsParser(getItems(await cheerioInit(pagesUrls[nextPage])),category);
                         break;
                     case "END":
                         result.done = true;

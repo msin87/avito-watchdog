@@ -1,36 +1,33 @@
-const Categories = require('../avito/category');
+"use strict"
 const Parser = require("../avito/parser")();
-const middleware = require('./middleware')();
 const STATE = {
     IDLE: 'IDLE',
     BUSY: 'BUSY',
     STOP: 'STOP'
 };
-let parser, state=STATE.STOP, func;
+let parser, state = STATE.STOP;
 const childProcess = () => {
-    console.log(`Worker ${process.pid} started and finished`);
+    console.log(`Worker ${process.pid} started`);
     process.on('message', async message => {
         switch (message.type) {
-            case 'SET_FUNC':
-                func=middleware.getFunc();
-                break;
             case 'SET_URL':
-                state = STATE.IDLE;
                 parser = await Parser.init(message['payload']['url'], message['payload']['category']);
+                process.send({pid: process.pid, type: 'IDLE'});
                 break;
             case 'NEXT':
-                state = STATE.BUSY;
+                process.send({pid: process.pid, type: 'BUSY'});
                 const result = await parser.next();
-                state = STATE.IDLE;
-                process.send({type: 'RESULT', result, pid: process.pid});
+                if (result.done) {
+                    process.send({pid: process.pid, type: 'STOP'});
+                } else {
+                    process.send({pid: process.pid, type: 'RESULT'});
+                }
                 break;
-            case 'GET_STATE':
-                return state;
             default:
                 break;
         }
     });
-    process.send('test');
+    process.send({type: 'IDLE', pid: process.pid});
     // process.exit();
 };
 childProcess();
