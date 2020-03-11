@@ -37,7 +37,7 @@ const masterProcess = {
         }
         timer = setInterval(() => {
             if (workers[workerIndex]['state'] === 'IDLE')
-                workers[workerIndex].send({type: 'NEXT'});
+                workers[workerIndex].send({type: 'NEXT', id: workerIndex});
             workerIndex++;
             if (workerIndex >= numCores) workerIndex = 0
         }, interval);

@@ -16,7 +16,14 @@ const childProcess = () => {
                 break;
             case 'NEXT':
                 process.send({pid: process.pid, type: 'BUSY'});
-                const result = await parser.next();
+                let result;
+                try {
+                    result = await parser.next();
+                }
+                catch (error)
+                {
+                    console.log(error);
+                }
                 if (result.done) {
                     process.send({pid: process.pid, type: 'STOP'});
                 } else {
