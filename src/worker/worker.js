@@ -1,4 +1,3 @@
-"use strict"
 const Parser = require("../avito/parser")();
 const STATE = {
     IDLE: 'IDLE',

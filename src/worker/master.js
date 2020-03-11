@@ -1,5 +1,5 @@
 "use strict"
-const cp = require('child_process');
+const child_process = require('child_process');
 const numCores = require('os').cpus().length;
 const workers = [];
 const Parser = require("../avito/parser")();
@@ -12,7 +12,7 @@ const masterProcess = {
 
         console.log('Master cluster setting up ' + numCores + ' workers');
         for (let i = 0; i < numCores; i++) {
-            workers.push(cp.fork(__dirname + '/worker.js'));
+            workers.push(child_process.fork(__dirname + '/worker.js'));
             workers[i]['state'] = 'IDLE';
             workers[i].on('message', message => {
                 switch (message.type) {
