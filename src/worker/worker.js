@@ -10,7 +10,7 @@ const childProcess = () => {
     process.on('message', async message => {
         switch (message.type) {
             case 'SET_URL':
-                parser = await Parser.init(message['payload']['url'], message['payload']['category']);
+                parser = await Parser(message['payload']['url'], message['payload']['category']);
                 process.send({pid: process.pid, type: 'IDLE'});
                 break;
             case 'NEXT':

@@ -34,36 +34,8 @@ const itemsParser = (list, category) => {
         return Object.assign(result,customFields);
     })
 };
-module.exports = () => {
-    let pagesUrls, $, nextPage = 0;
+module.exports = async (url, category) => {
     const getItems = $ => $('.item[itemtype="http://schema.org/Product"]').toArray();
-    const init = async (url,category) => {
-        $ = await cheerioInit(url);
-        pagesUrls = $('.pagination-page').toArray().map(page => 'https://avito.ru' + page.attribs.href);
-        return {
-            next: async () => {
-                const state = !nextPage ? QueryState.BEGIN : nextPage < pagesUrls.length ? QueryState.NEXT : QueryState.END;
-                const result = {
-                    value: {
-                        items: Object.create(null),
-                        totalItems: $('span[class*=page-title-count]').text()
-                    }, done: false
-                };
-                switch (state) {
-                    case "BEGIN":
-                        result.value.items = itemsParser(getItems($), category);
-                        break;
-                    case "NEXT":
-                        result.value.items = itemsParser(getItems(await cheerioInit(pagesUrls[nextPage])),category);
-                        break;
-                    case "END":
-                        result.done = true;
-                        break;
-                }
-                nextPage += 1;
-                return result;
-            }
-        }
-    };
-    return {init};
+    const $ = await cheerioInit(url);
+    return itemsParser(getItems($), category);
 };
